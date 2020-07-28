@@ -16,17 +16,44 @@ def create_app(test_config=None):
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
   '''
+  CORS(app, resources={'/': {"origins": "*"}})
 
   '''
   @TODO: Use the after_request decorator to set Access-Control-Allow
   '''
+  @app.after_request
+  def after_request(response):
+      response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
+      response.headers.add('Access-Control-Allow-Methods', 'GET,PATCH,POST,DELETE,OPTIONS')
+      return response
 
   '''
   @TODO: 
   Create an endpoint to handle GET requests 
   for all available categories.
   '''
+  @app.route('/categories')
+  def getCategories():
+    categories_list = Category.query.all()
+    categories_dict = listToDict(categories_list)
+    return jsonify({
+      'success': True,
+      'categories':categories_dict
+    }),200
 
+  def listToDict(list):
+    tempDict={}
+    #convert list of data to dictionary
+    for listitem in list:
+      tempDict.update({listitem.id: listitem.type})
+    return tempDict
+
+  def paginateSelection(request,selection):
+    page             = request.args.get('page' , 1 , type = int)
+    start            = (page - 1) * QUESTIONS_PER_PAGE
+    end              = start + QUESTIONS_PER_PAGE
+    selection_list   = [sel.format() for sel in selection]
+    return selection_list[start:end]
 
   '''
   @TODO: 
@@ -40,7 +67,18 @@ def create_app(test_config=None):
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. 
   '''
-
+  @app.route('/questions')
+  def getQuestions():
+    #get questions from db
+    questions = Question.query.all()
+    #get categories from db and convert it to dict because of frontend design
+    categories  = listToDict(Category.query.all())
+    return jsonify({
+      'success'        : True,
+      'questions'      : paginateSelection(request,questions),
+      'totalQuestions' : len(questions),
+      'categories'     : categories
+    }),200
   '''
   @TODO: 
   Create an endpoint to DELETE question using a question ID. 
@@ -79,8 +117,22 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
-
-
+  @app.route('/categories/<int:category_id>/questions')
+  def getQuestionsByCategoryId(category_id):
+    selectedCategory = Category.query.filter(Category.id == category_id).one_or_none()
+    if selectedCategory is None:
+      abort(404)
+    else:
+      questions_by_catId=Question.query.filter(Question.category == category_id).all()
+      if len(questions_by_catId) == 0:
+        abort(404)
+      else:
+        return jsonify({
+          'success'   : True,
+          'questions' : paginateSelection(request,questions_by_catId),
+          'totalQuestions' : len(questions_by_catId),
+          'currentCategory': category_id
+          })
   '''
   @TODO: 
   Create a POST endpoint to get questions to play the quiz. 
