@@ -3,6 +3,7 @@ from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
+from operator import itemgetter 
 
 from models import setup_db, Question, Category
 
@@ -35,13 +36,13 @@ def create_app(test_config=None):
   @app.route('/categories')
   def getCategories():
     categories_list = Category.query.all()
-    categories_dict = listToDict(categories_list)
+    categories_dict = listToDict_Category(categories_list)
     return jsonify({
       'success': True,
       'categories':categories_dict
     }),200
 
-  def listToDict(list):
+  def listToDict_Category(list):
     tempDict={}
     #convert list of data to dictionary
     for listitem in list:
@@ -72,7 +73,7 @@ def create_app(test_config=None):
     #get questions from db
     questions = Question.query.all()
     #get categories from db and convert it to dict because of frontend design
-    categories  = listToDict(Category.query.all())
+    categories  = listToDict_Category(Category.query.all())
     return jsonify({
       'success'        : True,
       'questions'      : paginateSelection(request,questions),
@@ -132,7 +133,7 @@ def create_app(test_config=None):
           'questions' : paginateSelection(request,questions_by_catId),
           'totalQuestions' : len(questions_by_catId),
           'currentCategory': category_id
-          })
+          }),200
   '''
   @TODO: 
   Create a POST endpoint to get questions to play the quiz. 
@@ -144,7 +145,59 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
-
+  @app.route('/quizzes', methods=['GET','POST'])
+  def getRandomQuestionByCatIdAndPrevQues():
+    #get category id and previous questions
+    data = request.get_json()
+    previous_questions = data.get('previous_questions')
+    quiz_category      = data.get('quiz_category')
+    #print('previous_questions ',previous_questions)
+    #print('quiz_category ',quiz_category)
+    if (previous_questions is None or quiz_category is None):
+      abort(404)
+    #print('after first abort')
+    #print('quiz_category[\'id\'] ',quiz_category['id'])
+    #get all categories
+    if (quiz_category['id'] == 0): 
+      selection = Question.query.all()
+      #print('selection ',selection)
+    else:
+      #check if the selected category exists
+      cat_selection = Category.query.filter(Category.id == quiz_category['id']).one_or_none()
+      if (cat_selection is None):
+        abort(404)
+      else:
+        #get questions by category id
+        selection = Question.query.filter(Question.category == quiz_category['id']).all()
+        if (len(selection) == 0):
+          abort(404)
+    #convert questions dict to list
+    selectedQuestions = [sel.format() for sel in selection]
+    #print('selectedQuestions ',selectedQuestions)
+    #extract all questions ids in a list
+    id_list = list(map(itemgetter('id'), selectedQuestions)) 
+    #print('id_list ',id_list)
+    #generate random number to select one random question id of the selected list
+    generated = False
+    while not generated:
+      #select random number from a list
+      randomQuestionId = random.choice(id_list)
+      #print('randomQuestionId ',randomQuestionId)
+      #check if the randomly selected question ID exists in the previous_questions
+      if randomQuestionId not in previous_questions:
+        generated = True 
+    #get the question with the selected id
+    i=0
+    for d in selectedQuestions:
+      if d['id'] == randomQuestionId:
+        question = selection[i].format()
+        break
+      i+=1
+    #print('question ',question)
+    return jsonify({
+        'success'   : True,
+        'question' : question
+        }),200 
   '''
   @TODO: 
   Create error handlers for all expected errors 
