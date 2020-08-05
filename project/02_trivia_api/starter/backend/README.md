@@ -1,7 +1,15 @@
 # Full Stack Trivia API Backend
-
+# Introduction
+ This is an API to manage trivia app and play the game. 
+ Using the application you can:
+ 1- Display questions - both all questions and by category. Questions should show the question, category and difficulty rating by default and can show/hide the answer.
+ Delete questions.
+ 2-Add questions and require that they include question and answer text.
+ 3-Search for questions based on a text query string.
+ 4-Play the quiz game, randomizing either all questions or within a specific category.
 ## Getting Started
-
+ Base URL: this app can be run locally. The backend app is hosted at the default, http://localhost:5000/, which is set as proxy in the frontend configuration.
+ API Keys /Authentication (if applicable): it doesn't require authentication or keys.
 ### Installing Dependencies
 
 #### Python 3.7
@@ -88,10 +96,251 @@ GET '/categories'
 '6' : "Sports"}
 
 ```
+## Errors
+ errors are returned as JSON objects in the following format:
+ {
+   "success": False, 
+   "error": 422,
+   "message": "unprocessable"
+ }
+ The API will return four types of errors when requests fail:
+ .400:bad request
+ .422:unprocessable
+ .404:Not found
+ .500:Internal Server Error
 
+## Resource endpoint library
+ .GET '/categories'
+  +General: 
+   Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
+   Request Arguments: None
+   Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs, and success key.
+  +Sample:
+   curl http://localhost:5000/categories
+   {
+     "categories": {
+       "1": "Science",
+       "2": "Art",
+       "3": "Geography",
+       "4": "History",
+       "5": "Entertainment",
+       "6": "Sports"
+     },
+     "success": true
+   }
+
+ .GET /questions
+  +General: 
+   returns a list of questions objects, success value, total number of questions, and categories.
+   results are paginated in groups of 10. Include a request argument to select page number, starting from 1.
+  +Sample:
+   curl http://localhost:5000/questions?page=1
+   {
+     "categories": {
+       "1": "Science", 
+       "2": "Art", 
+       "3": "Geography", 
+       "4": "History", 
+       "5": "Entertainment", 
+       "6": "Sports"
+     }, 
+     "questions": [
+       {
+         "answer": "Maya Angelou", 
+         "category": 4, 
+         "difficulty": 2, 
+         "id": 5, 
+         "question": "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?"
+       }, 
+       {
+         "answer": "Muhammad Ali", 
+         "category": 4, 
+         "difficulty": 1, 
+         "id": 9, 
+         "question": "What boxer's original name is Cassius Clay?"
+       }, 
+       {
+         "answer": "Apollo 13", 
+         "category": 5, 
+         "difficulty": 4, 
+         "id": 2, 
+         "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+       }, 
+       {
+         "answer": "Tom Cruise", 
+         "category": 5, 
+         "difficulty": 4, 
+         "id": 4, 
+         "question": "What actor did author Anne Rice first denounce, then praise in the role of her beloved Lestat?"
+       }, 
+       {
+         "answer": "Edward Scissorhands", 
+         "category": 5, 
+         "difficulty": 3, 
+         "id": 6, 
+         "question": "What was the title of the 1990 fantasy directed by Tim Burton about a young man with multi-bladed appendages?"
+       }, 
+       {
+         "answer": "Brazil", 
+         "category": 6, 
+         "difficulty": 3, 
+         "id": 10, 
+         "question": "Which is the only team to play in every soccer World Cup tournament?"
+       }, 
+       {
+         "answer": "Uruguay", 
+         "category": 6, 
+         "difficulty": 4, 
+         "id": 11, 
+         "question": "Which country won the first ever soccer World Cup in 1930?"
+       }, 
+       {
+         "answer": "George Washington Carver", 
+         "category": 4, 
+         "difficulty": 2, 
+         "id": 12, 
+         "question": "Who invented Peanut Butter?"
+       }, 
+       {
+         "answer": "Lake Victoria", 
+         "category": 3, 
+         "difficulty": 2, 
+         "id": 13, 
+         "question": "What is the largest lake in Africa?"
+       }, 
+       {
+         "answer": "The Palace of Versailles", 
+         "category": 3, 
+         "difficulty": 3, 
+         "id": 14, 
+         "question": "In which royal palace would you find the Hall of Mirrors?"
+       }
+     ], 
+     "success": true, 
+     "totalQuestions": 20
+   }
+
+ .DELETE /questions/{question_id}
+  +General: 
+   deletes a specific question with the given question_id if it exists. It returns success value.
+  +Sample:
+   curl -X DELETE http://localhost:5000/questions/58
+   {
+    "success": true
+   }
+   
+ .POST /questions
+  +General: 
+   creates a new question using the submitted question, answer, category, and difficulty.
+   It returns success value.
+  +Sample:
+   curl http://localhost:5000/questions -X POST -H "Content-Type: application/json" -d '{"question":"testing question","answer":"answering test question","difficulty":"1","category":"1"}'
+   {
+    "success": true
+   }
+   
+ .POST /questions/search
+  +General: 
+   return any questions for whom the search term is a substring of the question.
+   It returns a list of questions objects, success value, total number of questions.
+   results are paginated in groups of 10. Include a request argument to select page number, starting from 1.
+  +Sample:
+   curl http://localhost:5000/questions/search -X POST -H "Content-Type: application/json" -d '{"searchTerm":"title"}'
+   {
+     "questions": [
+       {
+         "answer": "Maya Angelou",
+         "category": 4,
+         "difficulty": 2,
+         "id": 5,
+         "question": "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?"
+       },
+       {
+         "answer": "Edward Scissorhands",
+         "category": 5,
+         "difficulty": 3,
+         "id": 6,
+         "question": "What was the title of the 1990 fantasy directed by Tim Burton about a young man with multi-bladed appendages?"
+       }
+     ],
+     "success": true,
+     "total_questions": 2
+   }
+
+ .GET /categories/{category_id}/questions
+  +General: 
+   get questions based on category_id if it exists. 
+   It returns a list of questions objects, success value, total number of questions, and current category.
+   results are paginated in groups of 10. Include a request argument to select page number, starting from 1.
+  +Sample:
+   curl http://localhost:5000/categories/1/questions
+   {
+     "currentCategory": 1,
+     "questions": [
+       {
+         "answer": "The Liver",
+         "category": 1,
+         "difficulty": 4,
+         "id": 20,
+         "question": "What is the heaviest organ in the human body?"
+       },
+       {
+         "answer": "Alexander Fleming",
+         "category": 1,
+         "difficulty": 3,
+         "id": 21,
+         "question": "Who discovered penicillin?"
+       },
+       {
+         "answer": "Blood",
+         "category": 1,
+         "difficulty": 4,
+         "id": 22,
+         "question": "Hematology is a branch of medicine involving the study of what?"
+       }
+     ],
+     "success": true,
+     "totalQuestions": 3
+   }
+
+ .POST /quizzes
+  +General: 
+   get questions to play the quiz. 
+   get questions based on category_id if it exists. 
+   It takes category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions.
+   It returns a questions object and success value.
+  +Sample:
+   curl -X POST http://localhost:5000/quizzes -H "Content-Type: application/json" -d '{"previous_questions":[16,17],"quiz_category":{"type":"Art","id":2}}'
+   {
+     "question": {
+       "answer": "One",
+       "category": 2,
+       "difficulty": 4,
+       "id": 18,
+       "question": "How many paintings did Van Gogh sell in his lifetime?"
+     },
+     "success": true
+   }
 
 ## Testing
 To run the tests, run
+python test_flaskr.py
+
+There are 14 tests covering:
+  - get all categories successfully
+  - get all questions successfully
+  - invalid page number handling when getting questions, checking error 404 
+  - delete question with id successfully
+  - handling delete question with nonexisting id, checking error 422
+  - create question successfully
+  - handling create question with empty answer, checking error 400
+  - search questions by searchTerm successfully
+  - handling search questions with empty searchTerm, checking error 400
+  - handling search questions with nonExisting searchTerm, checking error 422
+  - get Questions By CategoryId successfully
+  - handling get questions with nonExisting CategoryId, checking error 422
+  - quizzes get question by CategoryId successfully
+  - handling quizzes questions with empty inputs, checking error 400
 ```
 dropdb trivia_test
 createdb trivia_test

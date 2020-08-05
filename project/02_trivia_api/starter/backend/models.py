@@ -15,13 +15,13 @@ setup_db(app)
     binds a flask application and a SQLAlchemy service
 '''
 def setup_db(app, database_path=database_path):
-    print('hi, setup_db')
+    #print('hi, setup_db')
     app.config["SQLALCHEMY_DATABASE_URI"] = database_path
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.app = app
     db.init_app(app)
     db.create_all()
-    print('bye, setup_db')
+    #print('bye, setup_db')
 
 '''
 Question

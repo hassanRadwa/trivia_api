@@ -213,7 +213,7 @@ def create_app(test_config=None):
     quiz_category      = data.get('quiz_category')
     #print('previous_questions ',previous_questions)
     #print('quiz_category ',quiz_category)
-    if (previous_questions == [] or quiz_category == {}):
+    if (quiz_category == {}):
       abort(400)
     #print('after first abort')
     #print('quiz_category[\'id\'] ',quiz_category['id'])
@@ -239,7 +239,7 @@ def create_app(test_config=None):
     # print('selectedQuestions ',selectedQuestions)
     #extract all questions ids in a list
     id_list = list(map(itemgetter('id'), selectedQuestions)) 
-    print('id_list ',id_list)
+    #print('id_list ',id_list)
     #generate random number to select one random question id of the selected list
     generated = False
     while not generated:
@@ -256,7 +256,7 @@ def create_app(test_config=None):
         question = selection[i].format()
         break
       i+=1
-    print('question ',question)
+    #print('question ',question)
     return jsonify({
         'success'   : True,
         'question' : question
