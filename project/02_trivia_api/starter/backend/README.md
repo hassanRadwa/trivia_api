@@ -97,6 +97,7 @@ GET '/categories'
 
 ```
 ## Errors
+```
  errors are returned as JSON objects in the following format:
  {
    "success": False, 
@@ -108,8 +109,9 @@ GET '/categories'
  .422:unprocessable
  .404:Not found
  .500:Internal Server Error
-
+```
 ## Resource endpoint library
+```
  .GET '/categories'
   +General: 
    Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
@@ -321,11 +323,15 @@ GET '/categories'
      },
      "success": true
    }
-
+```
 ## Testing
 To run the tests, run
+```
+dropdb trivia_test
+createdb trivia_test
+psql trivia_test < trivia.psql
 python test_flaskr.py
-
+```
 There are 14 tests covering:
   - get all categories successfully
   - get all questions successfully
@@ -341,9 +347,3 @@ There are 14 tests covering:
   - handling get questions with nonExisting CategoryId, checking error 422
   - quizzes get question by CategoryId successfully
   - handling quizzes questions with empty inputs, checking error 400
-```
-dropdb trivia_test
-createdb trivia_test
-psql trivia_test < trivia.psql
-python test_flaskr.py
-```
