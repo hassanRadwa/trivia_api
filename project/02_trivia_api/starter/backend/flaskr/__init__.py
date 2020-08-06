@@ -242,25 +242,33 @@ def create_app(test_config=None):
     #print('id_list ',id_list)
     #generate random number to select one random question id of the selected list
     generated = False
-    while not generated:
-      #select random number from a list
-      randomQuestionId = random.choice(id_list)
-      #print('randomQuestionId ',randomQuestionId)
-      #check if the randomly selected question ID exists in the previous_questions
-      if randomQuestionId not in previous_questions:
-        generated = True 
-    #get the question with the selected id
-    i=0
-    for d in selectedQuestions:
-      if d['id'] == randomQuestionId:
-        question = selection[i].format()
-        break
-      i+=1
-    #print('question ',question)
-    return jsonify({
-        'success'   : True,
-        'question' : question
-        }),200 
+    if len(previous_questions) < len(id_list):
+      while not generated:
+        #select random number from a list
+        randomQuestionId = random.choice(id_list)
+        #print('randomQuestionId ',randomQuestionId)
+        #check if the randomly selected question ID exists in the previous_questions
+        if randomQuestionId not in previous_questions:
+          generated = True 
+      #get the question with the selected id
+      i=0
+      for d in selectedQuestions:
+        #print('d ',d)
+        if d['id'] == randomQuestionId:
+          question = selection[i].format()
+          break
+        i+=1
+      #print('question ',question)
+      return jsonify({
+          'success'   : True,
+          'question' : question
+          }),200
+    else:
+      return jsonify({
+          'success'   : True,
+          #'question' : ''
+          }),200
+
   '''
   @TODO: 
   Create error handlers for all expected errors 
